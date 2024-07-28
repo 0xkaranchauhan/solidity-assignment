@@ -29,6 +29,7 @@ contract NFTStaker is
         uint256 tokenId;
         uint256 startBlock;
         uint256 unbondingStartBlock;
+        bool withdrawn;
     }
 
     mapping(address => Stake[]) public stakes;
@@ -40,25 +41,25 @@ contract NFTStaker is
 
     /**
      * @dev Initializes the contract with reward parameters.
-     * @param _nft Address of the NFT contract.
      * @param _rewardPerBlock Number of reward tokens given per block.
      * @param _delayPeriod Delay period for claiming rewards.
      * @param _unbondingPeriod Unbonding period for unstaking NFTs.
+     * @param _nft Address of the NFT contract.
      */
     function initialize(
-        address _nft,
         uint256 _rewardPerBlock,
         uint256 _delayPeriod,
-        uint256 _unbondingPeriod
+        uint256 _unbondingPeriod,
+        address _nft
     ) public initializer {
         __ERC20_init("Random Token", "RT");
         __UUPSUpgradeable_init();
         __Ownable_init(tx.origin);
 
-        nft = IERC721(_nft);
         rewardPerBlock = _rewardPerBlock;
         delayPeriod = _delayPeriod;
         unbondingPeriod = _unbondingPeriod;
+        nft = IERC721(_nft);
     }
 
     /**
@@ -76,7 +77,8 @@ contract NFTStaker is
                 Stake({
                     tokenId: tokenId,
                     startBlock: block.number,
-                    unbondingStartBlock: 0
+                    unbondingStartBlock: 0,
+                    withdrawn: false
                 })
             );
             emit Staked(msg.sender, tokenId);
@@ -179,6 +181,14 @@ contract NFTStaker is
     }
 
     /**
+     * @dev Updates the unbonding period for unstaking NFTs.
+     * @param _nft New unbonding period value.
+     */
+    function updateNFTAddress(address _nft) external onlyOwner {
+        nft = IERC721(_nft);
+    }
+
+    /**
      * @dev Starts the unbonding process for a specific NFT.
      * @param user Address of the user.
      * @param tokenId Token ID of the NFT to unbond.
@@ -224,16 +234,15 @@ contract NFTStaker is
      * @param user Address of the user.
      * @return reward Total accumulated reward.
      */
-    function _calculateReward(
-        address user
-    ) internal view returns (uint256 reward) {
+    function _calculateReward(address user) internal returns (uint256 reward) {
         Stake[] storage userStakes = stakes[user];
         for (uint256 i = 0; i < userStakes.length; i++) {
             Stake storage stakeData = userStakes[i];
-            if (stakeData.unbondingStartBlock > 0) {
+            if (stakeData.unbondingStartBlock > 0 && !stakeData.withdrawn) {
                 reward +=
                     (stakeData.unbondingStartBlock - stakeData.startBlock) *
                     rewardPerBlock;
+                stakeData.withdrawn = true;
             }
         }
     }

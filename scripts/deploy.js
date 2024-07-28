@@ -1,17 +1,34 @@
 const { ethers, upgrades } = require("hardhat");
 
-const NAME = "NFTStaker"
+async function deployRandomNFT() {
+    const RandomNFT = await ethers.getContractFactory("RandomNFT");
+    const randomNftContract = await upgrades.deployProxy(RandomNFT, [], { kind: 'uups', call: 'initialize' });
+    await randomNftContract.deployed();
+    console.log("RandomNFT UUPS Proxy Pattern V1 is deployed to proxy address:", randomNftContract.address);
+    return randomNftContract.address;
+}
+
+async function deployNFTStaker(nftAddress) {
+    const NFTStaker = await ethers.getContractFactory("NFTStaker");
+    const nftStakerContract = await upgrades.deployProxy(NFTStaker, ["10000000000000000000", "86400", "10", nftAddress], { kind: 'uups', call: 'initialize' });
+    await nftStakerContract.deployed();
+    console.log("NFTStaker UUPS Proxy Pattern V1 is deployed to proxy address:", nftStakerContract.address);
+}
 
 async function main() {
-    const Contract = await ethers.getContractFactory(NAME);
-    // const contract = await upgrades.deployProxy(Contract, [], { kind: 'uups', unsafeAllow: ['constructor'] });
-    const contract = await upgrades.deployProxy(Contract, [8], { kind: 'uups', call: 'initialize' });
-    await contract.deployed();
-    console.log(`UUPS Proxy Pattern V1 is deployed to proxy address: ${contract.address}`);
-
+    try {
+        const nftAddress = await deployRandomNFT();
+        await deployNFTStaker(nftAddress);
+    } catch (error) {
+        console.error("Deployment failed:", error);
+        process.exitCode = 1;
+    }
 }
-// We recommend this pattern to be able to use async/await everywhere and properly handle errors.
+
 main().catch((error) => {
-    console.error(error);
+    console.error("Unexpected error:", error);
     process.exitCode = 1;
 });
+
+// 0x1EA6Bc66c582B4d34462c7Cc6464866F6c9cdFe6
+// 0x8009CeD8d035cEC2D2a98B992B6b4c56cd1904ed
