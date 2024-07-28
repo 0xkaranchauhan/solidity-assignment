@@ -113,6 +113,10 @@ contract NFTStaker is
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
+            require(
+                nft.ownerOf(tokenId) == address(this),
+                "Does not contain the tokenId"
+            );
             _withdraw(msg.sender, tokenId);
         }
     }
