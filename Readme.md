@@ -1,6 +1,4 @@
-# NFTStaker
-
-### NFTStaker is a smart contract that allows users to stake NFTs and earn rewards in the form of ERC20 tokens.
+# NFTStaker: ### NFTStaker is a smart contract that allows users to stake NFTs and earn rewards in the form of ERC20 tokens.
 
 ## Features:
 
