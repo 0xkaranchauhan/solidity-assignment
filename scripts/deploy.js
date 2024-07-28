@@ -30,5 +30,5 @@ main().catch((error) => {
     process.exitCode = 1;
 });
 
-// 0x1EA6Bc66c582B4d34462c7Cc6464866F6c9cdFe6
-// 0x8009CeD8d035cEC2D2a98B992B6b4c56cd1904ed
+// https://testnet.bscscan.com/address/0x1EA6Bc66c582B4d34462c7Cc6464866F6c9cdFe6
+// https://testnet.bscscan.com/address/0x8009CeD8d035cEC2D2a98B992B6b4c56cd1904ed
